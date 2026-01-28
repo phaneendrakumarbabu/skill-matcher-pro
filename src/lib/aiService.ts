@@ -89,8 +89,18 @@ Important:
     const result = JSON.parse(content);
     console.log('✅ AI analysis complete:', { matchPercentage: result.matchPercentage, atsScore: result.atsScore });
     return result as AIAnalysisResult;
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ AI Analysis Error:', error);
+    
+    // Check for specific error types
+    if (error?.status === 429) {
+      throw new Error('OpenAI API quota exceeded. Please check your billing details or try again later.');
+    } else if (error?.status === 401) {
+      throw new Error('Invalid OpenAI API key. Please check your configuration.');
+    } else if (error?.message?.includes('quota')) {
+      throw new Error('OpenAI API quota exceeded. Using basic analysis instead.');
+    }
+    
     throw new Error('Failed to analyze resume with AI. Please try again.');
   }
 }

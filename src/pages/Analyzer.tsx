@@ -89,28 +89,49 @@ export default function Analyzer() {
 
     setIsAnalyzing(true);
     
-    try {
-      const roleName = jobRoles.find(r => r.id === selectedRole)?.name || '';
-      const requiredSkills = skillsByRole[selectedRole] || [];
-      
-      let results;
-      
-      // Try AI analysis first if configured
-      if (isAIConfigured()) {
-        try {
-          console.log('Starting AI analysis...');
-          const aiResults = await analyzeResumeWithAI(resumeText, selectedRole, roleName, requiredSkills);
-          results = {
-            ...aiResults,
-            isAIPowered: true,
-          };
-          
-          toast({
-            title: 'AI Analysis Complete',
-            description: 'Your resume has been analyzed using advanced AI.',
-          });
-        } catch (error) {
-          console.error('AI analysis failed, falling back to basic analysis:', error);
+    // Wrap everything in a try-catch to ensure we always navigate
+    const performAnalysis = async () => {
+      try {
+        const roleName = jobRoles.find(r => r.id === selectedRole)?.name || '';
+        const requiredSkills = skillsByRole[selectedRole] || [];
+        
+        let results;
+        
+        // Try AI analysis first if configured
+        if (isAIConfigured()) {
+          try {
+            console.log('Starting AI analysis...');
+            const aiResults = await analyzeResumeWithAI(resumeText, selectedRole, roleName, requiredSkills);
+            results = {
+              ...aiResults,
+              isAIPowered: true,
+            };
+            
+            toast({
+              title: 'AI Analysis Complete',
+              description: 'Your resume has been analyzed using advanced AI.',
+            });
+          } catch (error: any) {
+            console.error('AI analysis failed, falling back to basic analysis:', error);
+            
+            // Check if it's a quota error
+            const isQuotaError = error?.message?.includes('quota') || error?.message?.includes('429');
+            
+            results = {
+              ...analyzeResume(resumeText, selectedRole),
+              isAIPowered: false,
+            };
+            
+            toast({
+              title: 'Using Basic Analysis',
+              description: isQuotaError 
+                ? 'OpenAI API quota exceeded. Using keyword matching instead.'
+                : 'AI analysis unavailable. Using keyword matching.',
+            });
+          }
+        } else {
+          // Fallback to basic analysis
+          console.log('AI not configured, using basic analysis');
           results = {
             ...analyzeResume(resumeText, selectedRole),
             isAIPowered: false,
@@ -121,56 +142,50 @@ export default function Analyzer() {
             description: 'AI analysis unavailable. Using keyword matching.',
           });
         }
-      } else {
-        // Fallback to basic analysis
-        console.log('AI not configured, using basic analysis');
-        results = {
-          ...analyzeResume(resumeText, selectedRole),
-          isAIPowered: false,
-        };
         
-        toast({
-          title: 'Using Basic Analysis',
-          description: 'AI analysis unavailable. Using keyword matching.',
-        });
-      }
-      
-      // Store results in sessionStorage
-      sessionStorage.setItem('analysisResults', JSON.stringify({
-        ...results,
-        roleName,
-        analyzedAt: new Date().toISOString(),
-      }));
-      
-      // Save to history (localStorage for non-logged in users)
-      historyService.saveAnalysis(roleName, selectedRole, results, 'My Resume');
-      
-      // Save to Firestore if user is logged in
-      if (currentUser) {
-        try {
-          await firestoreService.saveAnalysis(
+        // Store results in sessionStorage
+        sessionStorage.setItem('analysisResults', JSON.stringify({
+          ...results,
+          roleName,
+          analyzedAt: new Date().toISOString(),
+        }));
+        
+        // Save to history (localStorage for non-logged in users)
+        historyService.saveAnalysis(roleName, selectedRole, results, 'My Resume');
+        
+        // Save to Firestore if user is logged in (don't wait for it)
+        if (currentUser) {
+          firestoreService.saveAnalysis(
             currentUser.uid,
             roleName,
             selectedRole,
             results,
             'My Resume'
-          );
-        } catch (error) {
-          console.error('Error saving to Firestore:', error);
-          // Continue anyway - localStorage backup exists
+          ).catch(error => {
+            console.error('Error saving to Firestore:', error);
+            // Continue anyway - localStorage backup exists
+          });
         }
+        
+        return true;
+      } catch (error) {
+        console.error('Analysis error:', error);
+        toast({
+          title: 'Analysis Failed',
+          description: 'An error occurred during analysis. Please try again.',
+          variant: 'destructive',
+        });
+        return false;
       }
-      
-      // Navigate to results page
-      console.log('Navigating to results...');
+    };
+    
+    // Perform analysis and navigate regardless of outcome
+    const success = await performAnalysis();
+    
+    if (success) {
+      console.log('Analysis complete, navigating to results...');
       navigate('/results');
-    } catch (error) {
-      console.error('Analysis error:', error);
-      toast({
-        title: 'Analysis Failed',
-        description: 'An error occurred during analysis. Please try again.',
-        variant: 'destructive',
-      });
+    } else {
       setIsAnalyzing(false);
     }
   };
