@@ -8,6 +8,9 @@ import { sampleResumeText, jobRoles, analyzeResume, skillsByRole } from '@/lib/r
 import { extractTextFromPDF } from '@/lib/pdfParser';
 import { analyzeResumeWithAI, isAIConfigured } from '@/lib/aiService';
 import { testEnvironment } from '@/lib/testEnv';
+import { historyService } from '@/lib/historyService';
+import { firestoreService } from '@/lib/firestoreService';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import * as Icons from 'lucide-react';
 
@@ -20,6 +23,7 @@ export default function Analyzer() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const { toast } = useToast();
 
   const loadSample = () => {
@@ -94,6 +98,7 @@ export default function Analyzer() {
       // Try AI analysis first if configured
       if (isAIConfigured()) {
         try {
+          console.log('Starting AI analysis...');
           const aiResults = await analyzeResumeWithAI(resumeText, selectedRole, roleName, requiredSkills);
           results = {
             ...aiResults,
@@ -114,15 +119,20 @@ export default function Analyzer() {
           toast({
             title: 'Using Basic Analysis',
             description: 'AI analysis unavailable. Using keyword matching.',
-            variant: 'destructive',
           });
         }
       } else {
         // Fallback to basic analysis
+        console.log('AI not configured, using basic analysis');
         results = {
           ...analyzeResume(resumeText, selectedRole),
           isAIPowered: false,
         };
+        
+        toast({
+          title: 'Using Basic Analysis',
+          description: 'AI analysis unavailable. Using keyword matching.',
+        });
       }
       
       // Store results in sessionStorage
@@ -132,6 +142,27 @@ export default function Analyzer() {
         analyzedAt: new Date().toISOString(),
       }));
       
+      // Save to history (localStorage for non-logged in users)
+      historyService.saveAnalysis(roleName, selectedRole, results, 'My Resume');
+      
+      // Save to Firestore if user is logged in
+      if (currentUser) {
+        try {
+          await firestoreService.saveAnalysis(
+            currentUser.uid,
+            roleName,
+            selectedRole,
+            results,
+            'My Resume'
+          );
+        } catch (error) {
+          console.error('Error saving to Firestore:', error);
+          // Continue anyway - localStorage backup exists
+        }
+      }
+      
+      // Navigate to results page
+      console.log('Navigating to results...');
       navigate('/results');
     } catch (error) {
       console.error('Analysis error:', error);
@@ -140,7 +171,6 @@ export default function Analyzer() {
         description: 'An error occurred during analysis. Please try again.',
         variant: 'destructive',
       });
-    } finally {
       setIsAnalyzing(false);
     }
   };

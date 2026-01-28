@@ -1,16 +1,38 @@
-import { Link, useLocation } from 'react-router-dom';
-import { FileText, Home, BarChart3, Sparkles } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { FileText, Home, BarChart3, Sparkles, LogIn, LayoutDashboard, LogOut, User } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { motion } from 'framer-motion';
+import { Button } from './ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { currentUser, logout } = useAuth();
 
   const links = [
     { to: '/', label: 'Home', icon: Home },
     { to: '/analyzer', label: 'Analyzer', icon: FileText },
+    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/results', label: 'Results', icon: BarChart3 },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/signin');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   return (
     <motion.nav
@@ -49,7 +71,38 @@ export function Navbar() {
             })}
           </div>
 
-          <ThemeToggle />
+          <div className="flex items-center gap-3">
+            {currentUser ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <User className="w-4 h-4" />
+                    <span className="hidden sm:inline">{currentUser.email?.split('@')[0]}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/signin">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <LogIn className="w-4 h-4" />
+                  <span className="hidden sm:inline">Sign In</span>
+                </Button>
+              </Link>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </motion.nav>

@@ -6,6 +6,11 @@ An AI-powered resume analyzer that helps job seekers match their skills to job r
 ![React](https://img.shields.io/badge/React-18.3.1-61dafb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue)
 ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-green)
+![Firebase](https://img.shields.io/badge/Firebase-Integrated-orange)
+
+## 🌐 Live Demo
+
+**Deployed on Vercel**: [Coming Soon]
 
 ## ✨ Features
 
@@ -174,3 +179,135 @@ If you have any questions or need help, please open an issue on GitHub.
 ---
 
 Made with ❤️ by Phaneendra Kumar Babu
+
+
+## 🚀 Deployment
+
+### Deploy to Vercel (Recommended)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/phaneendrakumarbabu/skill-matcher-pro)
+
+**Manual Deployment:**
+
+1. **Install Vercel CLI**
+```bash
+npm install -g vercel
+```
+
+2. **Login and Deploy**
+```bash
+vercel login
+cd skill-matcher-pro-main
+vercel --prod
+```
+
+3. **Set Environment Variables in Vercel Dashboard**
+   - Go to Project Settings → Environment Variables
+   - Add: `VITE_OPENAI_API_KEY` with your OpenAI API key
+
+4. **Update Firebase Authorized Domains**
+   - Go to Firebase Console → Authentication → Settings
+   - Add your Vercel domain (e.g., `your-app.vercel.app`)
+
+For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)
+
+### Build Locally
+
+```bash
+npm run build
+npm run preview
+```
+
+## 📚 Documentation
+
+- [Firebase Integration Guide](FIREBASE_INTEGRATION.md)
+- [Dashboard Features](DASHBOARD_FEATURES.md)
+- [Sign-In Integration](SIGNIN_INTEGRATION.md)
+- [Deployment Guide](DEPLOYMENT.md)
+
+## 🔐 Environment Variables
+
+Create a `.env` file in the root directory:
+
+```bash
+# Required for AI features
+VITE_OPENAI_API_KEY=your_openai_api_key_here
+
+# Firebase (already configured in code)
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
+```
+
+## 🎯 Roadmap
+
+- [x] AI-powered resume analysis
+- [x] User authentication (Firebase)
+- [x] Dashboard with history tracking
+- [x] PDF export functionality
+- [x] Beautiful sign-in/up pages
+- [ ] Cover letter generator
+- [ ] LinkedIn profile analyzer
+- [ ] Job matching system
+- [ ] Mobile app (React Native)
+- [ ] Chrome extension
+
+## 📊 Tech Stack
+
+**Frontend:**
+- React 18 + TypeScript
+- Vite (Build tool)
+- Tailwind CSS + Shadcn UI
+- Framer Motion (Animations)
+- Recharts (Data visualization)
+
+**Backend:**
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Analytics
+
+**AI:**
+- OpenAI GPT-4o-mini
+
+**Deployment:**
+- Vercel (Recommended)
+- Compatible with Netlify, Railway, etc.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 👨‍💻 Author
+
+**Phaneendra Kumar Babu**
+- GitHub: [@phaneendrakumarbabu](https://github.com/phaneendrakumarbabu)
+- Project: [ResumeAI Pro](https://github.com/phaneendrakumarbabu/skill-matcher-pro)
+
+## 🙏 Acknowledgments
+
+- [OpenAI](https://openai.com/) for the GPT-4o-mini API
+- [Firebase](https://firebase.google.com/) for authentication and database
+- [Shadcn UI](https://ui.shadcn.com/) for the beautiful components
+- [Lucide](https://lucide.dev/) for the icons
+- [Tailwind CSS](https://tailwindcss.com/) for styling
+- [Vercel](https://vercel.com/) for hosting
+
+## 📧 Support
+
+If you have any questions or need help, please open an issue on GitHub.
+
+---
+
+**Made with ❤️ by Phaneendra Kumar Babu**
+
+⭐ Star this repo if you find it helpful!

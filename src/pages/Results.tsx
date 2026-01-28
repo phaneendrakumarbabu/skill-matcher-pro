@@ -87,6 +87,12 @@ export default function Results() {
             </p>
           </div>
           <div className="flex gap-3">
+            <Link to="/dashboard">
+              <Button variant="outline" className="gap-2">
+                <FileCheck className="w-4 h-4" />
+                View Dashboard
+              </Button>
+            </Link>
             <Link to="/analyzer">
               <Button variant="outline" className="gap-2">
                 <RotateCcw className="w-4 h-4" />
